@@ -1,9 +1,11 @@
+use crate::api::controllers::file_handler::upload_file_handler;
 use crate::api::controllers::todo_handler::{
     create_todo_handler, delete_todo_handler, get_todo_handler, list_todos_handler,
 };
 use crate::api::controllers::user_handler::{get_nonce_handler, verify_signature_handler};
 use crate::api::middleware::ServiceContextMaintenanceCheck;
 use crate::container::Container;
+use actix_files as fs;
 use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceFactory, ServiceRequest, ServiceResponse};
 use actix_web::Error;
@@ -24,24 +26,34 @@ pub fn create_app(
 > {
     let todo_service = container.todo_service.clone();
     let user_service = container.user_service.clone();
+    let file_service = container.file_service.clone();
     let service_context_service = container.service_context_service.clone();
 
     App::new()
         .app_data(web::Data::from(todo_service.clone()))
         .app_data(web::Data::from(user_service.clone()))
+        .app_data(web::Data::from(file_service.clone()))
         .app_data(web::Data::from(service_context_service.clone()))
         .wrap(TracingLogger::default())
         .wrap(ServiceContextMaintenanceCheck)
         .service(
-            web::scope("/todos")
-                .route("", web::post().to(create_todo_handler))
-                .route("", web::get().to(list_todos_handler))
-                .route("/{id}", web::get().to(get_todo_handler))
-                .route("/{id}", web::delete().to(delete_todo_handler)),
+            web::scope("/api")
+                .service(
+                    web::scope("/todos")
+                        .route("", web::post().to(create_todo_handler))
+                        .route("", web::get().to(list_todos_handler))
+                        .route("/{id}", web::get().to(get_todo_handler))
+                        .route("/{id}", web::delete().to(delete_todo_handler)),
+                )
+                .service(
+                    web::scope("/users")
+                        .route("/nonce", web::post().to(get_nonce_handler))
+                        .route("/verify", web::post().to(verify_signature_handler)),
+                )
+                .service(
+                    web::scope("/files").route("/upload", web::post().to(upload_file_handler)),
+                ),
         )
-        .service(
-            web::scope("/users")
-                .route("/nonce", web::post().to(get_nonce_handler))
-                .route("/verify", web::post().to(verify_signature_handler))
-        )
+        // 静态文件服务器 - 提供上传的文件访问
+        .service(fs::Files::new("/static", "uploads")) //uploads是文件的映射路径
 }
