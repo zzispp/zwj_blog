@@ -7,6 +7,13 @@ app:
 database:
   url: "postgresql://postgres:1234@127.0.0.1:5432/postgres"
 
+redis:
+  username: ""
+  host: "127.0.0.1"
+  port: 6379
+  db: 0
+  password: ""
+
 logging:
   level: "info"
   format: "pretty"  # "json" or "pretty"

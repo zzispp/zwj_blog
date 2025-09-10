@@ -27,3 +27,15 @@ serde_json = "1.0"
 futures-util = "0.3.26"
 num_cpus = "1.0"
 rand = "0.8.4"
+redis = { version = "0.32.5", features = [
+    "acl",
+    "geospatial",
+    "keep-alive",
+    "num-bigint",
+    "script",
+    "streams",
+    "tokio-comp",
+    "aio",
+] }
+tokio = { version = "1.0", features = ["full"] }
+solana-sdk = "3.0.0"

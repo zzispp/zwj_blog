@@ -1,8 +1,12 @@
+
 use actix_web::web;
 
 use crate::{
-    api::dto::{response::ApiResponse, user::GetNonceDTO},
-    domain::{error::ApiError, services::user::UserService},
+    api::dto::{response::ApiResponse, user::{GetNonceDTO, VerifySignatureDTO}},
+    domain::{
+        error::ApiError,
+        services::user::UserService,
+    },
 };
 
 pub async fn get_nonce_handler(
@@ -10,8 +14,17 @@ pub async fn get_nonce_handler(
     post_data: web::Json<GetNonceDTO>,
 ) -> Result<ApiResponse<String>, ApiError> {
     let address = post_data.into_inner().address;
-    let nonce = user_service
-        .get_nonce(address)
-        .await?;
+    let nonce = user_service.get_nonce(address).await?;
     Ok(ApiResponse::success(nonce))
+}
+
+
+//验证签名
+pub async fn verify_signature_handler(
+    user_service: web::Data<dyn UserService>,
+    post_data: web::Json<VerifySignatureDTO>,
+) -> Result<ApiResponse<()>, ApiError> {
+    let VerifySignatureDTO {address, signature} = post_data.into_inner();
+    let result = user_service.verify_signature(address, signature).await?;
+    Ok(ApiResponse::success(result))
 }

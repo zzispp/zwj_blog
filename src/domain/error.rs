@@ -6,6 +6,12 @@ pub struct CommonError {
     pub code: u32,
 }
 
+impl From<&str> for CommonError {
+    fn from(error: &str) -> CommonError {
+        CommonError { message: error.to_string(), code: 500 }
+    }
+}
+
 impl std::fmt::Display for CommonError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Error: {}, Code: {}", self.message, self.code)
@@ -34,14 +40,23 @@ impl actix_web::ResponseError for ApiError {
 }
 
 #[derive(Debug)]
-pub struct RepositoryError {
-    pub message: String,
+pub enum RepositoryError {
+    DatabaseError(String),
+    SerializationError(String),
+    NotFound(String),
+    ValidationError(String),
 }
 
 impl Into<CommonError> for RepositoryError {
     fn into(self) -> CommonError {
+        let message = match self {
+            RepositoryError::DatabaseError(msg) => format!("数据库错误: {}", msg),
+            RepositoryError::SerializationError(msg) => format!("序列化错误: {}", msg),
+            RepositoryError::NotFound(msg) => format!("未找到: {}", msg),
+            RepositoryError::ValidationError(msg) => format!("验证错误: {}", msg),
+        };
         CommonError {
-            message: self.message,
+            message,
             code: 500,
         }
     }

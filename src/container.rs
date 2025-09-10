@@ -1,15 +1,18 @@
 use crate::config::AppConfig;
+use crate::domain::repositories::redis::RedisRepository;
 use crate::domain::repositories::todo::TodoRepository;
 use crate::domain::repositories::user::UserRepository;
 use crate::domain::services::service_context::ServiceContextService;
 use crate::domain::services::todo::TodoService;
 use crate::domain::services::user::UserService;
 use crate::infrastructure::databases::postgresql::db_pool;
+use crate::infrastructure::repositories::redis::RedisClientRepository;
 use crate::infrastructure::repositories::todo::TodoDieselRepository;
 use crate::infrastructure::repositories::user::UserDieselRepository;
 use crate::infrastructure::services::service_context::ServiceContextServiceImpl;
 use crate::services::todo::TodoServiceImpl;
 use crate::services::user::UserServiceImpl;
+use redis::Client;
 use std::sync::Arc;
 
 pub struct Container {
@@ -26,10 +29,22 @@ impl Container {
         let todo_service = Arc::new(TodoServiceImpl {
             repository: todo_repository,
         });
+        let redis_url = format!("redis://{}:{}@{}:{}/{}", 
+            config.redis.username, 
+            config.redis.password, 
+            config.redis.host, 
+            config.redis.port,
+            config.redis.db);
+        let redis_client = Arc::new(
+            Client::open(redis_url.as_str()).expect("Failed to create Redis client"),
+        );
+        let redis_repository: Arc<dyn RedisRepository<String>> =
+            Arc::new(RedisClientRepository::new(redis_client));
         let user_repository: Arc<dyn UserRepository> =
             Arc::new(UserDieselRepository::new(pool.clone()));
         let user_service = Arc::new(UserServiceImpl {
             repository: user_repository,
+            redis_repository,
         });
         let service_context_service = Arc::new(ServiceContextServiceImpl::new(pool.clone()));
         Container {

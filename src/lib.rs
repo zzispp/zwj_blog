@@ -8,3 +8,4 @@ pub mod domain;
 pub mod infrastructure;
 pub mod logging;
 pub mod services;
+pub mod constants;

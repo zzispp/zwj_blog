@@ -19,7 +19,7 @@ impl UserDieselRepository {
 
 #[async_trait]
 impl UserRepository for UserDieselRepository {
-    async fn get_nonce(&self) -> RepositoryResult<String> {
+    async fn gen_nonce(&self) -> RepositoryResult<String> {
         let mut rng = rand::thread_rng();
 
         Ok(Alphanumeric

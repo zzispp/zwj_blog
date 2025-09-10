@@ -45,6 +45,13 @@ mod test_todo_controllers {
                 level: "debug".to_string(),
                 format: "pretty".to_string(),
             },
+            redis: zwj_blog::config::Redis {
+                username: "".to_string(),
+                host: "127.0.0.1".to_string(),
+                port: 6379,
+                password: "123456".to_string(),
+                db: 0,
+            },
         };
 
         {

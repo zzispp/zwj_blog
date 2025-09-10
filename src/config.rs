@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct AppConfig {
     pub app: App,
     pub database: Database,
+    pub redis: Redis,
     pub logging: Logging,
 }
 
@@ -24,6 +25,15 @@ fn default_workers() -> usize {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Database {
     pub url: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Redis {
+    pub host: String,
+    pub port: u16,
+    pub username: String,
+    pub password: String,
+    pub db: u8,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

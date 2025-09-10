@@ -15,24 +15,18 @@ impl DieselRepositoryError {
 
 impl From<r2d2::Error> for DieselRepositoryError {
     fn from(error: r2d2::Error) -> DieselRepositoryError {
-        DieselRepositoryError(RepositoryError {
-            message: error.to_string(),
-        })
+        DieselRepositoryError(RepositoryError::DatabaseError(error.to_string()))
     }
 }
 
 impl From<diesel::result::Error> for DieselRepositoryError {
     fn from(error: diesel::result::Error) -> DieselRepositoryError {
-        DieselRepositoryError(RepositoryError {
-            message: error.to_string(),
-        })
+        DieselRepositoryError(RepositoryError::DatabaseError(error.to_string()))
     }
 }
 
 impl<T: std::fmt::Debug> From<AsyncPoolError<T>> for DieselRepositoryError {
     fn from(error: AsyncPoolError<T>) -> DieselRepositoryError {
-        DieselRepositoryError(RepositoryError {
-            message: error.to_string(),
-        })
+        DieselRepositoryError(RepositoryError::DatabaseError(error.to_string()))
     }
 }

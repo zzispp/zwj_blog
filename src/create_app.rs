@@ -1,7 +1,7 @@
 use crate::api::controllers::todo_handler::{
     create_todo_handler, delete_todo_handler, get_todo_handler, list_todos_handler,
 };
-use crate::api::controllers::user_handler::get_nonce_handler;
+use crate::api::controllers::user_handler::{get_nonce_handler, verify_signature_handler};
 use crate::api::middleware::ServiceContextMaintenanceCheck;
 use crate::container::Container;
 use actix_web::body::MessageBody;
@@ -42,5 +42,6 @@ pub fn create_app(
         .service(
             web::scope("/users")
                 .route("/nonce", web::post().to(get_nonce_handler))
+                .route("/verify", web::post().to(verify_signature_handler))
         )
 }
