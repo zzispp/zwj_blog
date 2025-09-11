@@ -52,6 +52,9 @@ mod test_todo_controllers {
                 password: "123456".to_string(),
                 db: 0,
             },
+            auth: zwj_blog::config::Auth {
+                address: vec!["BMVsMz7reBwBLu1xRf48Xdnrrx5LYi68FDV8XEjW99PF".to_string()],
+            },
         };
 
         {

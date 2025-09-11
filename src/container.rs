@@ -1,22 +1,34 @@
 use crate::config::AppConfig;
+use crate::domain::repositories::blog::BlogRepository;
 use crate::domain::repositories::file::FileRepository;
+use crate::domain::repositories::note::NoteRepository;
 use crate::domain::repositories::redis::RedisRepository;
+use crate::domain::repositories::snippet::SnippetRepository;
 use crate::domain::repositories::tag::TagRepository;
 use crate::domain::repositories::todo::TodoRepository;
 use crate::domain::repositories::user::UserRepository;
+use crate::domain::services::blog::BlogService;
 use crate::domain::services::file::FileService;
+use crate::domain::services::note::NoteService;
 use crate::domain::services::service_context::ServiceContextService;
+use crate::domain::services::snippet::SnippetService;
 use crate::domain::services::tag::TagService;
 use crate::domain::services::todo::TodoService;
 use crate::domain::services::user::UserService;
 use crate::infrastructure::databases::postgresql::db_pool;
+use crate::infrastructure::repositories::blog::BlogDieselRepository;
 use crate::infrastructure::repositories::file::FileDieselRepository;
+use crate::infrastructure::repositories::note::NoteDieselRepository;
 use crate::infrastructure::repositories::redis::RedisClientRepository;
+use crate::infrastructure::repositories::snippet::SnippetDieselRepository;
 use crate::infrastructure::repositories::tag::TagDieselRepository;
 use crate::infrastructure::repositories::todo::TodoDieselRepository;
 use crate::infrastructure::repositories::user::UserDieselRepository;
 use crate::infrastructure::services::service_context::ServiceContextServiceImpl;
+use crate::services::blog::BlogServiceImpl;
 use crate::services::file::FileServiceImpl;
+use crate::services::note::NoteServiceImpl;
+use crate::services::snippet::SnippetServiceImpl;
 use crate::services::tag::TagServiceImpl;
 use crate::services::todo::TodoServiceImpl;
 use crate::services::user::UserServiceImpl;
@@ -28,6 +40,9 @@ pub struct Container {
     pub user_service: Arc<dyn UserService>,
     pub file_service: Arc<dyn FileService>,
     pub tag_service: Arc<dyn TagService>,
+    pub blog_service: Arc<dyn BlogService>,
+    pub note_service: Arc<dyn NoteService>,
+    pub snippet_service: Arc<dyn SnippetService>,
     pub service_context_service: Arc<dyn ServiceContextService>,
 }
 
@@ -41,22 +56,35 @@ impl Container {
         });
         let file_repository: Arc<dyn FileRepository> =
             Arc::new(FileDieselRepository::new(pool.clone()));
-                
+
         let file_service = Arc::new(FileServiceImpl::new(file_repository));
 
         let tag_repository: Arc<dyn TagRepository> =
             Arc::new(TagDieselRepository::new(pool.clone()));
         let tag_service = Arc::new(TagServiceImpl::new(tag_repository));
 
-        let redis_url = format!("redis://{}:{}@{}:{}/{}", 
-            config.redis.username, 
-            config.redis.password, 
-            config.redis.host, 
+        let blog_repository: Arc<dyn BlogRepository> =
+            Arc::new(BlogDieselRepository::new(pool.clone()));
+        let blog_service = Arc::new(BlogServiceImpl::new(blog_repository));
+
+        let note_repository: Arc<dyn NoteRepository> =
+            Arc::new(NoteDieselRepository::new(pool.clone()));
+        let note_service = Arc::new(NoteServiceImpl::new(note_repository));
+
+        let snippet_repository: Arc<dyn SnippetRepository> =
+            Arc::new(SnippetDieselRepository::new(pool.clone()));
+        let snippet_service = Arc::new(SnippetServiceImpl::new(snippet_repository));
+
+        let redis_url = format!(
+            "redis://{}:{}@{}:{}/{}",
+            config.redis.username,
+            config.redis.password,
+            config.redis.host,
             config.redis.port,
-            config.redis.db);
-        let redis_client = Arc::new(
-            Client::open(redis_url.as_str()).expect("Failed to create Redis client"),
+            config.redis.db
         );
+        let redis_client =
+            Arc::new(Client::open(redis_url.as_str()).expect("Failed to create Redis client"));
         let redis_repository: Arc<dyn RedisRepository<String>> =
             Arc::new(RedisClientRepository::new(redis_client));
         let user_repository: Arc<dyn UserRepository> =
@@ -64,6 +92,7 @@ impl Container {
         let user_service = Arc::new(UserServiceImpl {
             repository: user_repository,
             redis_repository,
+            auth: config.auth.address.clone(),
         });
         let service_context_service = Arc::new(ServiceContextServiceImpl::new(pool.clone()));
         Container {
@@ -71,6 +100,9 @@ impl Container {
             user_service,
             file_service,
             tag_service,
+            blog_service,
+            note_service,
+            snippet_service,
             service_context_service,
         }
     }

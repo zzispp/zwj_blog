@@ -7,7 +7,7 @@ pub enum TagType {
     Note,
     Snippet,
 }
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct Tag {
     pub id: i32,
     pub name: String,

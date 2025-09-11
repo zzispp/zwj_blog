@@ -1,6 +1,9 @@
-pub mod todo;
-pub mod user;
+pub mod blog;
+pub mod file;
+pub mod note;
 pub mod redis;
 pub mod repository;
-pub mod file;
+pub mod snippet;
 pub mod tag;
+pub mod todo;
+pub mod user;

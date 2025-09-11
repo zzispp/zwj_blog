@@ -18,16 +18,19 @@ use crate::{
 pub struct UserServiceImpl {
     pub repository: Arc<dyn UserRepository>,
     pub redis_repository: Arc<dyn RedisRepository<String>>,
+    pub auth: Vec<String>,
 }
 
 impl UserServiceImpl {
     pub fn new(
         repository: Arc<dyn UserRepository>,
         redis_repository: Arc<dyn RedisRepository<String>>,
+        auth: Vec<String>,
     ) -> Self {
         UserServiceImpl {
             repository,
             redis_repository,
+            auth,
         }
     }
 
@@ -116,6 +119,11 @@ impl UserService for UserServiceImpl {
         let is_valid_signature = signature.verify(&pubkey.to_bytes(), message.as_bytes());
         if !is_valid_signature {
             return Err(CommonError::from("Invalid signature"));
+        }
+
+        //检查地址是否在白名单中
+        if !self.auth.contains(&address) {
+            return Err(CommonError::from("Address not in whitelist"));
         }
 
         // 签名验证成功，清除Redis中的nonce

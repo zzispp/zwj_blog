@@ -7,6 +7,7 @@ pub struct AppConfig {
     pub database: Database,
     pub redis: Redis,
     pub logging: Logging,
+    pub auth: Auth,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -40,6 +41,11 @@ pub struct Redis {
 pub struct Logging {
     pub level: String,
     pub format: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Auth {
+    pub address: Vec<String>,
 }
 
 impl AppConfig {

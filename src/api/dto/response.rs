@@ -26,6 +26,16 @@ impl<T> ApiResponse<T> {
     }
 }
 
+impl ApiResponse<()> {
+    pub fn error(message: &str) -> Self {
+        ApiResponse {
+            code: 500,
+            message: message.to_string(),
+            data: (),
+        }
+    }
+}
+
 // 为ApiResponse实现Responder trait
 impl<T: Serialize> Responder for ApiResponse<T> {
     type Body = actix_web::body::BoxBody;

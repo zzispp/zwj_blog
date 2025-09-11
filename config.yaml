@@ -17,3 +17,5 @@ redis:
 logging:
   level: "info"
   format: "pretty"  # "json" or "pretty"
+auth:
+  address: ["BMVsMz7reBwBLu1xRf48Xdnrrx5LYi68FDV8XEjW99PF"]
