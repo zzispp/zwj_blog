@@ -1,4 +1,8 @@
 use crate::api::controllers::file_handler::upload_file_handler;
+use crate::api::controllers::tag_handler::{
+    create_tag_handler, delete_tag_handler, get_all_tags_handler, get_tag_handler,
+    list_tags_handler, tag_exists_handler, update_tag_handler,
+};
 use crate::api::controllers::todo_handler::{
     create_todo_handler, delete_todo_handler, get_todo_handler, list_todos_handler,
 };
@@ -27,12 +31,14 @@ pub fn create_app(
     let todo_service = container.todo_service.clone();
     let user_service = container.user_service.clone();
     let file_service = container.file_service.clone();
+    let tag_service = container.tag_service.clone();
     let service_context_service = container.service_context_service.clone();
 
     App::new()
         .app_data(web::Data::from(todo_service.clone()))
         .app_data(web::Data::from(user_service.clone()))
         .app_data(web::Data::from(file_service.clone()))
+        .app_data(web::Data::from(tag_service.clone()))
         .app_data(web::Data::from(service_context_service.clone()))
         .wrap(TracingLogger::default())
         .wrap(ServiceContextMaintenanceCheck)
@@ -50,8 +56,16 @@ pub fn create_app(
                         .route("/nonce", web::post().to(get_nonce_handler))
                         .route("/verify", web::post().to(verify_signature_handler)),
                 )
+                .service(web::scope("/files").route("/upload", web::post().to(upload_file_handler)))
                 .service(
-                    web::scope("/files").route("/upload", web::post().to(upload_file_handler)),
+                    web::scope("/tags")
+                        .route("/create", web::post().to(create_tag_handler))
+                        .route("/list", web::post().to(list_tags_handler))
+                        .route("/all", web::get().to(get_all_tags_handler))
+                        .route("/{id}", web::get().to(get_tag_handler))
+                        .route("/{id}", web::put().to(update_tag_handler))
+                        .route("/{id}", web::delete().to(delete_tag_handler))
+                        .route("/{id}/exists", web::get().to(tag_exists_handler)),
                 ),
         )
         // 静态文件服务器 - 提供上传的文件访问

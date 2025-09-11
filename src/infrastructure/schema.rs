@@ -20,6 +20,23 @@ diesel::table! {
 }
 
 diesel::table! {
+    tags (id) {
+        id -> Int4,
+        #[max_length = 191]
+        name -> Varchar,
+        #[max_length = 191]
+        slug -> Varchar,
+        #[sql_name = "type"]
+        #[max_length = 20]
+        type_ -> Varchar,
+        icon -> Nullable<Text>,
+        icon_dark -> Nullable<Text>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     todos (id) {
         id -> Int4,
         title -> Varchar,
@@ -44,6 +61,7 @@ diesel::table! {
 diesel::allow_tables_to_appear_in_same_query!(
     files,
     service_contexts,
+    tags,
     todos,
     users,
 );

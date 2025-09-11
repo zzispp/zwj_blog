@@ -1,19 +1,23 @@
 use crate::config::AppConfig;
 use crate::domain::repositories::file::FileRepository;
 use crate::domain::repositories::redis::RedisRepository;
+use crate::domain::repositories::tag::TagRepository;
 use crate::domain::repositories::todo::TodoRepository;
 use crate::domain::repositories::user::UserRepository;
 use crate::domain::services::file::FileService;
 use crate::domain::services::service_context::ServiceContextService;
+use crate::domain::services::tag::TagService;
 use crate::domain::services::todo::TodoService;
 use crate::domain::services::user::UserService;
 use crate::infrastructure::databases::postgresql::db_pool;
 use crate::infrastructure::repositories::file::FileDieselRepository;
 use crate::infrastructure::repositories::redis::RedisClientRepository;
+use crate::infrastructure::repositories::tag::TagDieselRepository;
 use crate::infrastructure::repositories::todo::TodoDieselRepository;
 use crate::infrastructure::repositories::user::UserDieselRepository;
 use crate::infrastructure::services::service_context::ServiceContextServiceImpl;
 use crate::services::file::FileServiceImpl;
+use crate::services::tag::TagServiceImpl;
 use crate::services::todo::TodoServiceImpl;
 use crate::services::user::UserServiceImpl;
 use redis::Client;
@@ -23,6 +27,7 @@ pub struct Container {
     pub todo_service: Arc<dyn TodoService>,
     pub user_service: Arc<dyn UserService>,
     pub file_service: Arc<dyn FileService>,
+    pub tag_service: Arc<dyn TagService>,
     pub service_context_service: Arc<dyn ServiceContextService>,
 }
 
@@ -38,6 +43,11 @@ impl Container {
             Arc::new(FileDieselRepository::new(pool.clone()));
                 
         let file_service = Arc::new(FileServiceImpl::new(file_repository));
+
+        let tag_repository: Arc<dyn TagRepository> =
+            Arc::new(TagDieselRepository::new(pool.clone()));
+        let tag_service = Arc::new(TagServiceImpl::new(tag_repository));
+
         let redis_url = format!("redis://{}:{}@{}:{}/{}", 
             config.redis.username, 
             config.redis.password, 
@@ -60,6 +70,7 @@ impl Container {
             todo_service,
             user_service,
             file_service,
+            tag_service,
             service_context_service,
         }
     }
